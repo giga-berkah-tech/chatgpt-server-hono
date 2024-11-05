@@ -1,16 +1,12 @@
-import { Context } from 'hono'
+import axios from 'axios';
 import OpenAI from 'openai';
-import axios from 'axios'
 
 
-import { failedResponse, successDataResponse, successResponse } from '../helpers/response_json';
-import { API_URL, CHAT_GPT_API_KEY, CHAT_GPT_MAX_COMPLETION_TOKENS, CHAT_GPT_MODEL } from '../utils/constants';
-import { Tenant, TenantKeys, UserTenant } from '../types/tenant';
 import { ServerWebSocket } from 'bun';
 import { clientRedis } from '..';
-import { TenantKey } from '@prisma/client';
+import { Tenant } from '../types/tenant';
+import { API_URL, CHAT_GPT_MODEL } from '../utils/constants';
 import { REDIS_TENANT, REDIS_TENANT_KEYS } from '../utils/key_types';
-import { getConnInfo } from 'hono/bun';
 
 
 const verifyWebSocketUser = async (tenant: string,token: string) => {
@@ -158,7 +154,7 @@ export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
                 role: 'system',
                 content: `
                     if user request image,video please give only link but not giving search URL, just give a random url link but not from example.com !!!
-                    
+   
                 `
             },
             ...message.messages.map((val: any) => {

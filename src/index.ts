@@ -1,13 +1,12 @@
-import { Hono } from 'hono'
-import { cors } from 'hono/cors'
-import { createBunWebSocket } from 'hono/bun'
 import type { ServerWebSocket } from 'bun'
+import { Hono } from 'hono'
+import { createBunWebSocket } from 'hono/bun'
 import { createClient } from 'redis'
 
 import { AuthRoutes, TenantRoutes } from './routes'
+import { corsAuth } from './services/AuthService'
 import { websocketOptions } from './services/WebSocketService'
 import { REDIS_URL } from './utils/constants'
-import { corsAuth } from './services/AuthService'
 
 // Initialize the Hono app
 const app = new Hono().basePath('/api')
