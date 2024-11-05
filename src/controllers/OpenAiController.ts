@@ -1,7 +1,6 @@
 import { Context } from 'hono'
 import OpenAI from 'openai';
 import axios from 'axios'
-import prisma from "../../prisma/client";
 
 
 import { failedResponse, successDataResponse, successResponse } from '../helpers/response_json';
