@@ -4,14 +4,13 @@ import { createBunWebSocket } from 'hono/bun'
 import type { ServerWebSocket } from 'bun'
 import { createClient } from 'redis'
 
-import { AuthRoutes, OpenAiRoutes } from './routes'
+import { AuthRoutes, TenantRoutes } from './routes'
 import { websocketOptions } from './services/WebSocketService'
 import { REDIS_URL } from './utils/constants'
 import { corsAuth } from './services/AuthService'
 
 // Initialize the Hono app
-const app = new Hono()
-// .basePath('/api')
+const app = new Hono().basePath('/api')
 
 export const clientRedis = createClient({
   url: REDIS_URL,
@@ -32,8 +31,8 @@ const checkConnRedis = async () => {
 app.use('/api/*', corsAuth)
 
 //Api Routes
-app.route('/api/openai', OpenAiRoutes)
-app.route('/api/auth', AuthRoutes)
+app.route('/', TenantRoutes)
+app.route('/', AuthRoutes)
 
 //Websocket
 const { upgradeWebSocket,websocket } =

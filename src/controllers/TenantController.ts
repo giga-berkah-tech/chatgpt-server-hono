@@ -10,16 +10,11 @@ export const getTenant = async (c: Context) => {
     // const body = await c.req
 
     // console.log("data",body.header)
-    console.log("info",info.remote.address)
+    console.log("info", info.remote.address)
     return successResponse(c, 'success', 200)
 }
 
 export const createTenant = async (c: Context) => {
-
-    const originHeader = c.req.header;
-
-  // Do something with the origin header, e.g., log it
-  console.log(originHeader);
 
     let tenantTemp: Tenant[] = []
     let tenantKeyTemp: TenantKeys[] = []
@@ -54,11 +49,11 @@ export const createTenant = async (c: Context) => {
             return failedResponse(c, 'Tenant_key already exists', 409)
         }
         tenantTemp.push({
-           id: body.name,
-           name: body.name,
-           maxCompletionToken: body.max_completion_token,
-           totalPromptTokenUsage: 0,
-           totalCompletionTokenUsage: 0
+            id: body.name,
+            name: body.name,
+            maxCompletionToken: body.max_completion_token,
+            totalPromptTokenUsage: 0,
+            totalCompletionTokenUsage: 0
         })
 
         tenantKeyTemp.push({
@@ -75,7 +70,7 @@ export const createTenant = async (c: Context) => {
             REDIS_TENANT_KEYS,
             JSON.stringify([...tenantKeyTemp]),
         )
-        
+
         return successResponse(c, 'Success add new tenant', 200)
     } else {
         return failedResponse(c, 'Tenant or tenant key not found in redis', 404)
@@ -130,7 +125,7 @@ export const deleteTenantWithTenantKey = async (c: Context) => {
             REDIS_TENANT_KEYS,
             JSON.stringify([...tenantKeyTemp]),
         )
-        
+
         return successResponse(c, 'Success delete tenant', 200)
     } else {
         return failedResponse(c, 'Tenant or tenant key not found in redis', 404)
@@ -168,11 +163,11 @@ export const editTenant = async (c: Context) => {
                     totalPromptTokenUsage: 0,
                     totalCompletionTokenUsage: 0
                 }
-            }else{
+            } else {
                 return val
             }
         })
-        
+
         await clientRedis.set(
             REDIS_TENANT,
             JSON.stringify([...tenantTemp]),

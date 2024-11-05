@@ -1,4 +1,4 @@
-import { OpenAiRoutes } from './OpenAiRoute'
 import {AuthRoutes} from './AuthRoute'
+import {TenantRoutes} from './TenantRoute'
 
-export{OpenAiRoutes, AuthRoutes}
+export{AuthRoutes, TenantRoutes}

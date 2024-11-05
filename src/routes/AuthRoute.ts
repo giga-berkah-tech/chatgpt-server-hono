@@ -6,7 +6,7 @@ import { failedResponse } from '../helpers/response_json';
 import { addIpAllowed, checkIp, removeIpAllowed } from '../controllers/AuthController';
 
 //inistialize router
-const router = new Hono()
+const router = new Hono().basePath('/auth');
 
 router.post('/add', async(c) =>{
     if (await checkIp(c)) {
