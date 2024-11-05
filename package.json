@@ -1,7 +1,7 @@
 {
   "name": "chatgpt-service",
   "scripts": {
-    "dev": "bun run --hot src/index.ts",
+    "start": "bun run --hot src/index.ts",
     "seed": "bun run src/seed/seed.ts"
   },
   "prisma": {
