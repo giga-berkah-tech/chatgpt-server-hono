@@ -15,7 +15,7 @@ RUN  
 COPY . .
 
 # Expose the port your Hono app listens on
-EXPOSE 8080
+EXPOSE 3000
 
 # Start the Hono app
 CMD ["bun", "start"]
