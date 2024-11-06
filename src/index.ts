@@ -10,7 +10,7 @@ import { REDIS_PASS, REDIS_URL } from './utils/constants'
 import { Seeding } from './seed/seed'
 
 // Initialize the Hono app
-const app = new Hono().basePath('/api')
+const app = new Hono()
 
 export const clientRedis = createClient({
   url: REDIS_URL,
@@ -31,8 +31,9 @@ const checkConnRedis = async () => {
 app.use('/api/*', corsAuth)
 
 //Api Routes
-app.route('/', TenantRoutes)
-app.route('/', AuthRoutes)
+const routePath = '/api'
+app.route(`${routePath}`, TenantRoutes)
+app.route(`${routePath}`, AuthRoutes)
 
 //Websocket
 const { upgradeWebSocket, websocket } =

@@ -5,7 +5,7 @@ const tenantData = [
     {
         id: "100",
         name: "100",
-        maxCompletionToken: 2000,
+        maxCompletionToken: 2048,
         totalPromptTokenUsage: 0,
         totalCompletionTokenUsage: 0
     }

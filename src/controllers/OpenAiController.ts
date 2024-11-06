@@ -148,6 +148,12 @@ export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
             ws.send(JSON.stringify({ status: 401, message: "sorry, user not valid" }));
         }
 
+        //Check max token user
+        if (userTenantData.totalCompletionTokenUsage + userTenantData.totalCompletionTokenUsage > tenantData.maxCompletionToken) {
+            ws.send(JSON.stringify({ status: 403, message: "Your request exceeds the maximum tokens on your tenant" }));
+            ws.close();
+        }
+
 
         let messagesOpenAi = [
             {
@@ -216,8 +222,6 @@ export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
             }
             ws.send(JSON.stringify(data));
         }
-    
-    
     
     if (getTenants != null) {
         JSON.parse(getTenants).map((val: any) => {
