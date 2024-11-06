@@ -9,19 +9,11 @@ import { addIpAllowed, checkIp, removeIpAllowed } from '../controllers/AuthContr
 const router = new Hono().basePath('/auth');
 
 router.post('/add', async(c) =>{
-    if (await checkIp(c)) {
-        return addIpAllowed(c)
-    }else{
-        return failedResponse(c,"You are not allowed",403)
-    }
+    return addIpAllowed(c)
 });
 
 router.delete('/remove', async(c) =>{
-    if (await checkIp(c)) {
-        return removeIpAllowed(c)
-    }else{
-        return failedResponse(c,"You are not allowed",403)
-    }
+    return removeIpAllowed(c)
 });
 
 

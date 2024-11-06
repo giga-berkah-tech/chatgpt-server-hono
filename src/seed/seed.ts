@@ -28,32 +28,37 @@ const ipAllowed = [
     }
 ]
 
-async function main() {
+export async function Seeding() {
+    try {
+        const getTenants = await clientRedis.get("tenants") ?? null
+        const getTenantKeys = await clientRedis.get("tenant_keys") ?? null
+        const getIpAllowed = await clientRedis.get("ip_allowed") ?? null
 
-    const getTenants = await clientRedis.get("tenants") ?? null
-    const getTenantKeys = await clientRedis.get("tenant_keys") ?? null
-    const getIpAllowed = await clientRedis.get("ip_allowed") ?? null
+        if (getTenants == null) {
+            await clientRedis.set("tenants", JSON.stringify(tenantData))
+        }
 
-    if (getTenants == null) {
-        await clientRedis.set("tenants", JSON.stringify(tenantData))
+        if (getTenantKeys == null) {
+            await clientRedis.set("tenant_keys", JSON.stringify(tenantKeyData))
+        }
+
+        if (getIpAllowed == null) {
+            await clientRedis.set("ip_allowed", JSON.stringify(ipAllowed))
+        }
+    } catch (error) {
+        console.log('Failed seeded to redis ', error)
+
     }
 
-    if (getTenantKeys == null) {
-        await clientRedis.set("tenant_keys", JSON.stringify(tenantKeyData))
-    }
-
-    if (getIpAllowed == null) {
-        await clientRedis.set("ip_allowed", JSON.stringify(ipAllowed))
-    }
 
 }
 
-main()
-    .then(async () => {
-        console.log('Successfully seeded to redis')
-    })
-    .catch(async (e) => {
-        console.log('Failed seeded to redis ', e)
-        console.error(e)
-        process.exit(1);
-    });
+// Seeding()
+//     .then(async () => {
+//         console.log('Successfully seeded to redis')
+//     })
+//     .catch(async (e) => {
+//         console.log('Failed seeded to redis ', e)
+//         console.error(e)
+//         process.exit(1);
+//     });

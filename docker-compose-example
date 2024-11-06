@@ -1,0 +1,42 @@
+version: '3.3'
+services:
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - /redis/dаta:/root/redis
+      - /redis/redis.conf:/usr/local/etc/redis/redis.conf
+    environment:
+      - REDIS_PASSWORD=
+      - REDIS_PORT=
+      - REDIS_DATABASES=
+    networks:
+      - chatnet
+  chatgpt-service:
+    image: honojs/chatgpt-service:1.0.6
+    hostname: chatgptserver
+    environment:
+      - API_URL=
+      - CHAT_GPT_API_KEY=
+      - CHAT_GPT_MODEL=
+      - CHAT_GPT_MAX_COMPLETION_TOKENS=
+      - REDIS_URL=
+      - REDIS_PAS=
+      - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      - BUN_RUNTIME_TRANSPILER_CACHE_PATH=0
+      - BUN_INSTALL_BIN=/usr/local/bin
+    working_dir: /app
+    ports:
+      - "80:3001"
+    networks:
+      - chatnet
+    depends_on:
+      - redis
+    restart: always
+
+networks:
+  chatnet:
+    driver: bridge
+

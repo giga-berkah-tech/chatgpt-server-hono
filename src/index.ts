@@ -6,24 +6,25 @@ import { createClient } from 'redis'
 import { AuthRoutes, TenantRoutes } from './routes'
 import { corsAuth } from './services/AuthService'
 import { websocketOptions } from './services/WebSocketService'
-import { REDIS_URL } from './utils/constants'
+import { REDIS_PASS, REDIS_URL } from './utils/constants'
+import { Seeding } from './seed/seed'
 
 // Initialize the Hono app
 const app = new Hono().basePath('/api')
 
 export const clientRedis = createClient({
   url: REDIS_URL,
-  password: '',
+  password: "",
 })
 
 const checkConnRedis = async () => {
   try {
-      clientRedis
+    clientRedis
       .on('error', (err) => console.log('Redis Failed to connect with error: ', err))
-      .connect()
-      console.log('Connection to Redis is successful')
+      .connect().then(() => Seeding().then(() => console.log('Successfully seeded to redis')))
+
   } catch (e: any) {
-      console.log('Failed connection to redis check with error: ', e)
+    console.log('Failed connection to redis check with error: ', e)
   }
 }
 
@@ -34,30 +35,31 @@ app.route('/', TenantRoutes)
 app.route('/', AuthRoutes)
 
 //Websocket
-const { upgradeWebSocket,websocket } =
+const { upgradeWebSocket, websocket } =
   createBunWebSocket<ServerWebSocket>()
-  
-  app.get(
-    '/ws',
-    upgradeWebSocket((c) => {
-      return {
-        // onMessage(event, ws) {
-        //   console.log(`Message from client: ${event.data}`)
-        //   ws.send('Hello from server1!')
-        // },
-        // onClose: () => {
-        //   console.log('Connection closed')
-        // },
-      }
-    })
-  )
 
-  Bun.serve({
-    // port: 3001,
-    websocket: websocketOptions,
-    fetch: app.fetch,
-  });
+app.get(
+  '/ws',
+  upgradeWebSocket((c) => {
+    return {
+      // onMessage(event, ws) {
+      //   console.log(`Message from client: ${event.data}`)
+      //   ws.send('Hello from server1!')
+      // },
+      // onClose: () => {
+      //   console.log('Connection closed')
+      // },
+    }
+  })
+)
 
-  checkConnRedis()
+Bun.serve({
+  port: 3001,
+  websocket: websocketOptions,
+  fetch: app.fetch,
+});
+
+checkConnRedis()
+
 
 export default app

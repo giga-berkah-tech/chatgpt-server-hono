@@ -1,5 +1,6 @@
 {
   "name": "chatgpt-service",
+  "type": "module",
   "scripts": {
     "start": "bun run --hot src/index.ts",
     "seed": "bun run src/seed/seed.ts"
