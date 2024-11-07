@@ -2,7 +2,7 @@
 import { Hono } from 'hono';
 
 //import controller
-import { createTenant, deleteTenantWithTenantKey, editTenant, getTenant } from '../controllers/TenantController';
+import { createTenant, deleteTenantWithTenantKey, editTenant, getTenants } from '../controllers/TenantController';
 import { failedResponse } from '../helpers/response_json';
 import { checkIp } from '../controllers/AuthController';
 
@@ -11,7 +11,7 @@ const router = new Hono().basePath('/tenant');
 
 router.get('/', async(c) =>{
     if (await checkIp(c)) {
-        return getTenant(c)
+        return getTenants(c)
     }else{
         return failedResponse(c,"You are not allowed",403)
     }

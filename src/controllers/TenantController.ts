@@ -1,17 +1,27 @@
 import { Context } from "hono"
 import { getConnInfo } from "hono/bun"
-import { failedResponse, successResponse } from "../helpers/response_json"
+import { failedResponse, successDataResponse, successResponse } from "../helpers/response_json"
 import { Tenant, TenantKeys } from "../types/tenant"
 import { clientRedis } from ".."
 import { REDIS_TENANT, REDIS_TENANT_KEYS } from "../utils/key_types"
 
-export const getTenant = async (c: Context) => {
-    const info = getConnInfo(c)
-    // const body = await c.req
-
-    // console.log("data",body.header)
-    console.log("info", info.remote.address)
-    return successResponse(c, 'success', 200)
+export const getTenants = async (c: Context) => {
+    let tenantTemp: Tenant[] = []
+    const getTenants = await clientRedis.get(REDIS_TENANT) ?? null
+    if (getTenants != null) {
+        JSON.parse(getTenants).map((val: any) => {
+            tenantTemp.push({
+                id: val.id,
+                name: val.name,
+                maxCompletionToken: val.maxCompletionToken,
+                totalPromptTokenUsage: val.totalPromptTokenUsage,
+                totalCompletionTokenUsage: val.totalCompletionTokenUsage
+            })
+        })
+        return successDataResponse(c, tenantTemp)
+    }else{
+        return failedResponse(c, 'Tenants_keys not found in redis', 404)
+    }
 }
 
 export const createTenant = async (c: Context) => {
