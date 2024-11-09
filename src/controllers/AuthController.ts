@@ -1,7 +1,7 @@
 import { Context } from "hono"
 import { getConnInfo } from "hono/bun"
 import { clientRedis } from ".."
-import { failedResponse, successResponse } from "../helpers/response_json"
+import { failedResponse, successDataResponse, successResponse } from "../helpers/response_json"
 
 export const checkIp = async (c: Context) => {
     let ipAllowedTemp: any = []
@@ -81,6 +81,31 @@ export const removeIpAllowed = async (c: Context) => {
         } else {
             return failedResponse(c, 'Ip not found', 404)
         }
+    } else {
+        return failedResponse(c, 'ip_allowed key not found in redis', 404)
+    }
+}
+
+export const getMyIp = async (c: Context) => {
+    const getIp = getConnInfo(c).remote.address?.replaceAll('::ffff:', '')
+    return successDataResponse(c, {
+        "myIp": getIp,
+    })
+}
+
+export const getListIp = async (c: Context) => {
+    let ipAllowedTemp: any = []
+
+    const getIpAllowed = await clientRedis.get("ip_allowed") ?? null
+
+    if (getIpAllowed != null) {
+        JSON.parse(getIpAllowed).map((val: any) => {
+            ipAllowedTemp.push({
+                ip: val.ip
+            })
+        })
+
+        return successDataResponse(c, ipAllowedTemp)
     } else {
         return failedResponse(c, 'ip_allowed key not found in redis', 404)
     }
