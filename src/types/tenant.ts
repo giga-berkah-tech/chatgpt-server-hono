@@ -3,7 +3,8 @@ export interface Tenant {
     name: string,
     maxCompletionToken: number
     totalPromptTokenUsage: number
-    totalCompletionTokenUsage: number
+    totalCompletionTokenUsage: number,
+    status: boolean
     // tenantKey:TenantKey
 }
 

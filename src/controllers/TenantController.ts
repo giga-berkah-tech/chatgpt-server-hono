@@ -61,7 +61,8 @@ export const createTenant = async (c: Context) => {
                 name: val.name,
                 maxCompletionToken: val.maxCompletionToken,
                 totalPromptTokenUsage: val.totalPromptTokenUsage,
-                totalCompletionTokenUsage: val.totalCompletionTokenUsage
+                totalCompletionTokenUsage: val.totalCompletionTokenUsage,
+                status: false
             })
         })
         JSON.parse(getTenant_keys).map((val: any) => {
@@ -83,7 +84,8 @@ export const createTenant = async (c: Context) => {
             name: body.name.toString(),
             maxCompletionToken: parseInt(body.max_completion_token),
             totalPromptTokenUsage: 0,
-            totalCompletionTokenUsage: 0
+            totalCompletionTokenUsage: 0,
+            status: false
         })
 
         tenantKeyTemp.push({
@@ -128,7 +130,8 @@ export const deleteTenantWithTenantKey = async (c: Context) => {
                 name: val.name,
                 maxCompletionToken: val.maxCompletionToken,
                 totalPromptTokenUsage: val.totalPromptTokenUsage,
-                totalCompletionTokenUsage: val.totalCompletionTokenUsage
+                totalCompletionTokenUsage: val.totalCompletionTokenUsage,
+                status: val.status
             })
         })
         JSON.parse(gettenant_keys).map((val: any) => {
@@ -187,7 +190,8 @@ export const editTenant = async (c: Context) => {
                 name: val.name,
                 maxCompletionToken: val.maxCompletionToken,
                 totalPromptTokenUsage: val.totalPromptTokenUsage,
-                totalCompletionTokenUsage: val.totalCompletionTokenUsage
+                totalCompletionTokenUsage: val.totalCompletionTokenUsage,
+                status: val.status
             })
         })
 
@@ -212,8 +216,9 @@ export const editTenant = async (c: Context) => {
                 return {
                     ...val,
                     maxCompletionToken: parseInt(body.max_completion_token),
-                    totalPromptTokenUsage: 0,
-                    totalCompletionTokenUsage: 0
+                    status:body.status,
+                    // totalPromptTokenUsage: 0,
+                    // totalCompletionTokenUsage: 0
                 }
             } else {
                 return val
