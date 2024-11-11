@@ -3,7 +3,7 @@ import { Hono } from 'hono'
 import { createBunWebSocket } from 'hono/bun'
 import { createClient } from 'redis'
 
-import { AuthRoutes, TenantRoutes } from './routes'
+import { AuthRoutes, TenantKeyRoutes, TenantRoutes } from './routes'
 import { corsAuth } from './services/AuthService'
 import { websocketOptions } from './services/WebSocketService'
 import { REDIS_PASS, REDIS_URL } from './utils/constants'
@@ -34,6 +34,7 @@ app.use('/api/*', corsAuth)
 const routePath = '/api'
 app.route(`${routePath}`, TenantRoutes)
 app.route(`${routePath}`, AuthRoutes)
+app.route(`${routePath}`, TenantKeyRoutes)
 
 //Websocket
 const { upgradeWebSocket, websocket } =

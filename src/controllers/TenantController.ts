@@ -47,7 +47,7 @@ export const createTenant = async (c: Context) => {
 
     const body = await c.req.json()
 
-    if (body.name == null || body.max_completion_token == null || body.chat_gpt_key == null || body.name == '' || body.max_completion_token == '' || body.chat_gpt_key == '') {
+    if (body.name == undefined || body.max_completion_token == undefined || body.chat_gpt_key == undefined || body.name == null || body.max_completion_token == null || body.chat_gpt_key == null || body.name == '' || body.max_completion_token == '' || body.chat_gpt_key == '') {
         return failedResponse(c, 'Name tenant, max completion token and chat gpt key is required', 422)
     }
 
@@ -62,7 +62,7 @@ export const createTenant = async (c: Context) => {
                 maxCompletionToken: val.maxCompletionToken,
                 totalPromptTokenUsage: val.totalPromptTokenUsage,
                 totalCompletionTokenUsage: val.totalCompletionTokenUsage,
-                status: false
+                status: val.status
             })
         })
         JSON.parse(getTenant_keys).map((val: any) => {
@@ -85,7 +85,7 @@ export const createTenant = async (c: Context) => {
             maxCompletionToken: parseInt(body.max_completion_token),
             totalPromptTokenUsage: 0,
             totalCompletionTokenUsage: 0,
-            status: false
+            status: body.status ?? false
         })
 
         tenantKeyTemp.push({
@@ -176,8 +176,8 @@ export const editTenant = async (c: Context) => {
 
     const body = await c.req.json()
 
-    if (body.tenant_name == null || body.max_completion_token == null || body.chat_gpt_key == null || body.tenant_name == '' || body.max_completion_token == '' || body.chat_gpt_key == '') {
-        return failedResponse(c, 'Name token, max completion token and chat gpt key is required', 422)
+    if (body.tenant_name == undefined || body.tenant_name == null || body.max_completion_token == null || body.chat_gpt_key == null || body.tenant_name == '' || body.max_completion_token == '' || body.chat_gpt_key == '' || body.status == null) {
+        return failedResponse(c, 'Name token, max completion token, chat gpt key & status must not be empty', 422)
     }
 
     const getTenants = await clientRedis.get(REDIS_TENANT) ?? null
@@ -253,18 +253,23 @@ export const editTenant = async (c: Context) => {
 
 }
 
-// export const deleteAllTenant = async (c: Context) => {
+export const deleteAllTenant = async (c: Context) => {
 
-//     const getTenants = await clientRedis.get(REDIS_TENANT) ?? null
-//     const getTenantKeys = await clientRedis.get(REDIS_TENANT_KEYS) ?? null
+    const getTenants = await clientRedis.get(REDIS_TENANT) ?? null
+    const getTenantKeys = await clientRedis.get(REDIS_TENANT_KEYS) ?? null
 
-//     if (getTenants != null && getTenantKeys != null) {
-//         await clientRedis.del(REDIS_TENANT)
-//         await clientRedis.del(REDIS_TENANT_KEYS)
-//         return successResponse(c, 'Success delete all tenant', 200)
-//     } else {
-        
-//     }
+    if (getTenants != null && getTenantKeys != null) {
+        await clientRedis.set(
+            REDIS_TENANT,
+            JSON.stringify([]),
+        )
 
-// c
-// }
+        await clientRedis.set(
+            REDIS_TENANT_KEYS,
+            JSON.stringify([]),
+        )
+        return successResponse(c, 'Success delete all tenant', 200)
+    } else {
+       return failedResponse(c, 'Tenant or tenant key not found in redis', 404)     
+    }
+}
