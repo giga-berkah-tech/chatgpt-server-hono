@@ -8,14 +8,12 @@ import { REDIS_TENANT, REDIS_TENANT_KEYS } from "../utils/key_types"
 export const getTenants = async (c: Context) => {
     let tenantTemp: Tenant[] = []
     const getTenants = await clientRedis.get(REDIS_TENANT) ?? null
-    if (getTenants != null) {
+    const getTenantKey = await clientRedis.get(REDIS_TENANT_KEYS) ?? null
+    if (getTenants != null && getTenantKey != null) {
         JSON.parse(getTenants).map((val: any) => {
             tenantTemp.push({
-                id: val.id,
-                name: val.name,
-                maxCompletionToken: val.maxCompletionToken,
-                totalPromptTokenUsage: val.totalPromptTokenUsage,
-                totalCompletionTokenUsage: val.totalCompletionTokenUsage
+                ...val,
+                chatGptKey: JSON.parse(getTenantKey).find((valTenantKey: any) => valTenantKey.tenantName == val.id)?.chatGptKey
             })
         })
         return successDataResponse(c, tenantTemp)
@@ -26,14 +24,19 @@ export const getTenants = async (c: Context) => {
 
 export const getTenantDetail = async (c: Context) => {
     const getTenants = await clientRedis.get(REDIS_TENANT) ?? null
-    if (getTenants != null) {
+    const getTenantKey = await clientRedis.get(REDIS_TENANT_KEYS) ?? null
+    if (getTenants != null && getTenantKey != null) {
         if (JSON.parse(getTenants).find((val: any) => val.id == c.req.param('tenant_id')) != null) {
-            return successDataResponse(c, JSON.parse(getTenants).find((val: any) => val.id == c.req.param('tenant_id')))
+            var result = {
+                ...JSON.parse(getTenants).find((val: any) => val.id == c.req.param('tenant_id')),
+                chatGptKey: JSON.parse(getTenantKey).find((val: any) => val.tenantName == c.req.param('tenant_id').toString())?.chatGptKey,
+            }
+            return successDataResponse(c,result)
         }else{
-            return failedResponse(c, 'Tenant not found', 404)
+            return failedResponse(c, 'Tenant or tenant_key not found', 404)
         }
     }else{
-        return failedResponse(c, 'Tenants_keys not found in redis', 404)
+        return failedResponse(c, 'Tenants_keys or tenants_key key not found in redis', 404)
     }
 }
 
