@@ -7,7 +7,8 @@ const tenantData = [
         name: "100",
         maxCompletionToken: 2048,
         totalPromptTokenUsage: 0,
-        totalCompletionTokenUsage: 0
+        totalCompletionTokenUsage: 0,
+        status:false
     }
 ]
 
