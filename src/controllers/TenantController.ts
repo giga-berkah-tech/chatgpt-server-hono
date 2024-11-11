@@ -72,15 +72,15 @@ export const createTenant = async (c: Context) => {
             return failedResponse(c, 'Tenant_key already exists', 409)
         }
         tenantTemp.push({
-            id: body.name,
-            name: body.name,
-            maxCompletionToken: body.max_completion_token,
+            id: body.name.toString(),
+            name: body.name.toString(),
+            maxCompletionToken: parseInt(body.max_completion_token),
             totalPromptTokenUsage: 0,
             totalCompletionTokenUsage: 0
         })
 
         tenantKeyTemp.push({
-            tenantName: body.name,
+            tenantName: body.name.toString(),
             chatGptKey: body.chat_gpt_key,
         })
 
@@ -182,7 +182,7 @@ export const editTenant = async (c: Context) => {
             if (val.id == body.tenant_name) {
                 return {
                     ...val,
-                    maxCompletionToken: body.max_completion_token,
+                    maxCompletionToken: parseInt(body.max_completion_token),
                     totalPromptTokenUsage: 0,
                     totalCompletionTokenUsage: 0
                 }
