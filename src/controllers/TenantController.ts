@@ -24,6 +24,19 @@ export const getTenants = async (c: Context) => {
     }
 }
 
+export const getTenantDetail = async (c: Context) => {
+    const getTenants = await clientRedis.get(REDIS_TENANT) ?? null
+    if (getTenants != null) {
+        if (JSON.parse(getTenants).find((val: any) => val.id == c.req.param('tenant_id')) != null) {
+            return successDataResponse(c, JSON.parse(getTenants).find((val: any) => val.id == c.req.param('tenant_id')))
+        }else{
+            return failedResponse(c, 'Tenant not found', 404)
+        }
+    }else{
+        return failedResponse(c, 'Tenants_keys not found in redis', 404)
+    }
+}
+
 export const createTenant = async (c: Context) => {
 
     let tenantTemp: Tenant[] = []
