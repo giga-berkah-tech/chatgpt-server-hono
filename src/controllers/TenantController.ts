@@ -126,8 +126,7 @@ export const deleteTenantWithTenantKey = async (c: Context) => {
         JSON.parse(gettenant_keys).map((val: any) => {
             tenantKeyTemp.push({
                 // id: val.id,
-                tenantName: val.tenantName,
-                chatGptKey: val.chatGptKey,
+                ...val
             })
         })
 
