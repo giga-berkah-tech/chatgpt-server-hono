@@ -13,7 +13,7 @@ export const getTenants = async (c: Context) => {
         JSON.parse(getTenants).map((val: any) => {
             tenantTemp.push({
                 ...val,
-                chatGptKey: JSON.parse(getTenantKey).find((valTenantKey: any) => valTenantKey.tenantName == val.id)?.chatGptKey != null || JSON.parse(getTenantKey).find((valTenantKey: any) => valTenantKey.tenantName == val.id)?.chatGptKey != ""
+                chatGptKey: JSON.parse(getTenantKey).find((valTenantKey: any) => valTenantKey.tenantName == val.id)?.chatGptKey != null && JSON.parse(getTenantKey).find((valTenantKey: any) => valTenantKey.tenantName == val.id)?.chatGptKey != ""
             })
         })
         return successDataResponse(c, tenantTemp)
