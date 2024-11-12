@@ -13,7 +13,7 @@ export const getTenants = async (c: Context) => {
         JSON.parse(getTenants).map((val: any) => {
             tenantTemp.push({
                 ...val,
-                chatGptKey: JSON.parse(getTenantKey).find((valTenantKey: any) => valTenantKey.tenantName == val.id)?.chatGptKey
+                chatGptKey: JSON.parse(getTenantKey).find((valTenantKey: any) => valTenantKey.tenantName == val.id)?.chatGptKey != null || JSON.parse(getTenantKey).find((valTenantKey: any) => valTenantKey.tenantName == val.id)?.chatGptKey != ""
             })
         })
         return successDataResponse(c, tenantTemp)
@@ -29,7 +29,7 @@ export const getTenantDetail = async (c: Context) => {
         if (JSON.parse(getTenants).find((val: any) => val.id == c.req.param('tenant_id')) != null) {
             var result = {
                 ...JSON.parse(getTenants).find((val: any) => val.id == c.req.param('tenant_id')),
-                chatGptKey: JSON.parse(getTenantKey).find((val: any) => val.tenantName == c.req.param('tenant_id').toString())?.chatGptKey,
+                chatGptKey: JSON.parse(getTenantKey).find((val: any) => val.tenantName == c.req.param('tenant_id').toString())?.chatGptKey != null &&JSON.parse(getTenantKey).find((val: any) => val.tenantName == c.req.param('tenant_id').toString())?.chatGptKey != "" ,
             }
             return successDataResponse(c,result)
         }else{
@@ -57,19 +57,13 @@ export const createTenant = async (c: Context) => {
     if (getTenants != null && getTenant_keys != null) {
         JSON.parse(getTenants).map((val: any) => {
             tenantTemp.push({
-                id: val.id,
-                name: val.name,
-                maxCompletionToken: val.maxCompletionToken,
-                totalPromptTokenUsage: val.totalPromptTokenUsage,
-                totalCompletionTokenUsage: val.totalCompletionTokenUsage,
-                status: val.status
+                ...val
             })
         })
         JSON.parse(getTenant_keys).map((val: any) => {
             tenantKeyTemp.push({
                 // id: val.id,
-                tenantName: val.tenantName,
-                chatGptKey: val.chatGptKey,
+               ...val
             })
         })
         if (JSON.parse(getTenants).find((val: any) => val.id == body.name) != null) {
@@ -126,12 +120,7 @@ export const deleteTenantWithTenantKey = async (c: Context) => {
     if (getTenants != null && gettenant_keys != null) {
         JSON.parse(getTenants).map((val: any) => {
             tenantTemp.push({
-                id: val.id,
-                name: val.name,
-                maxCompletionToken: val.maxCompletionToken,
-                totalPromptTokenUsage: val.totalPromptTokenUsage,
-                totalCompletionTokenUsage: val.totalCompletionTokenUsage,
-                status: val.status
+                ...val
             })
         })
         JSON.parse(gettenant_keys).map((val: any) => {
@@ -176,8 +165,8 @@ export const editTenant = async (c: Context) => {
 
     const body = await c.req.json()
 
-    if (body.tenant_name == undefined || body.tenant_name == null || body.max_completion_token == null || body.chat_gpt_key == null || body.tenant_name == '' || body.max_completion_token == '' || body.chat_gpt_key == '' || body.status == null) {
-        return failedResponse(c, 'Name token, max completion token, chat gpt key & status must not be empty', 422)
+    if (body.tenant_name == null || body.max_completion_token == null || body.tenant_name == '' || body.max_completion_token == '' || body.status == null) {
+        return failedResponse(c, 'Name tenant, max completion token & status must not be empty', 422)
     }
 
     const getTenants = await clientRedis.get(REDIS_TENANT) ?? null
@@ -186,20 +175,14 @@ export const editTenant = async (c: Context) => {
     if (getTenants != null && getTenantKeys != null) {
         JSON.parse(getTenants).map((val: any) => {
             tenantTemp.push({
-                id: val.id,
-                name: val.name,
-                maxCompletionToken: val.maxCompletionToken,
-                totalPromptTokenUsage: val.totalPromptTokenUsage,
-                totalCompletionTokenUsage: val.totalCompletionTokenUsage,
-                status: val.status
+                ...val
             })
         })
 
         JSON.parse(getTenantKeys).map((val: any) => {
             tenantKeyTemp.push({
                 // id: val.id,
-                tenantName: val.tenantName,
-                chatGptKey: val.chatGptKey,
+                ...val
             })
         })
 
@@ -215,10 +198,9 @@ export const editTenant = async (c: Context) => {
             if (val.id == body.tenant_name) {
                 return {
                     ...val,
-                    maxCompletionToken: parseInt(body.max_completion_token),
-                    status:body.status,
-                    // totalPromptTokenUsage: 0,
-                    // totalCompletionTokenUsage: 0
+                    name: body.tenant_name == undefined ? val.tenantName : body.tenant_name,
+                    maxCompletionToken: body.max_completion_token == undefined ? val.maxCompletionToken : parseInt(body.max_completion_token),
+                    status: body.status == undefined ? val.status : body.status,
                 }
             } else {
                 return val
@@ -229,7 +211,7 @@ export const editTenant = async (c: Context) => {
             if (val.tenantName == body.tenant_name) {
                 return {
                     ...val,
-                    chatGptKey: body.chat_gpt_key
+                    chatGptKey: body.chat_gpt_key == undefined ? val.chatGptKey : body.chat_gpt_key
                 }
             } else {
                 return val
