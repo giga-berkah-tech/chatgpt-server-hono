@@ -105,11 +105,7 @@ export const checkTenantVerifyUser = async (ws: ServerWebSocket, message: any) =
     if (getTenants != null) {
         JSON.parse(getTenants).map((val: any) => {
             tenantTemp.push({
-                id: val.id,
-                name: val.name,
-                maxCompletionToken: val.maxCompletionToken,
-                totalPromptTokenUsage: val.totalPromptTokenUsage,
-                totalCompletionTokenUsage: val.totalCompletionTokenUsage
+               ...val
             })
         })
 
@@ -226,11 +222,7 @@ export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
     if (getTenants != null) {
         JSON.parse(getTenants).map((val: any) => {
             tenantTemp.push({
-                id: val.id,
-                name: val.name,
-                maxCompletionToken: val.maxCompletionToken,
-                totalPromptTokenUsage: val.totalPromptTokenUsage,
-                totalCompletionTokenUsage: val.totalCompletionTokenUsage
+                ...val
             })
         })
     
