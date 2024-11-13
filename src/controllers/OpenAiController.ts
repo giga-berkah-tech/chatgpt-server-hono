@@ -122,144 +122,147 @@ export const checkTenantVerifyUser = async (ws: ServerWebSocket, message: any) =
 }
 
 export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
-    let chatsTemp = []
-    let tenantTemp: Tenant[] = []
-    let userTenantData
 
-        let totalPrompt = 0
-        let totalCompletion = 0
+    try {
+        let chatsTemp = []
+        let tenantTemp: Tenant[] = []
+        let userTenantData
     
-        const getTenants = await clientRedis.get(REDIS_TENANT) ?? "-"
-        const getTenantKey = await clientRedis.get(REDIS_TENANT_KEYS) ?? "-"
-        const getToken:any = await clientRedis.get(`USER_TOKEN_${message.token}`) ?? "-"
+            let totalPrompt = 0
+            let totalCompletion = 0
         
-    
-        const tenantData = JSON.parse(getTenants).find((val: any) => val.id == message.tenant)
-        const tenantKeyData = JSON.parse(getTenantKey).find((val: any) => val.tenantName == message.tenant)
-        if (getToken != "-") {
-            const tokenData = JSON.parse(getToken)
-            const getUserTenant = await clientRedis.get(`USER_DATA_${tokenData.userId}`) ?? "-"
-            userTenantData =  JSON.parse(getUserTenant)
-        }else{
-            ws.send(JSON.stringify({ status: 401, message: "sorry, user not valid" }));
-        }
-
-        //Check max token user
-        if (userTenantData.totalCompletionTokenUsage + userTenantData.totalCompletionTokenUsage > tenantData.maxCompletionToken) {
-            ws.send(JSON.stringify({ status: 403, message: "Your request exceeds the maximum tokens on your tenant" }));
-            ws.close();
-        }
-
-
-        let messagesOpenAi = [
-            {
-                role: 'system',
-                content: `
-                    if user request image,video please give only link but not giving search URL, just give a random url link but not from example.com !!!
-   
-                `
-            },
-            ...message.messages.map((val: any) => {
-                return {
-                    role: val.role,
-                    content: val.content
-                }
-            })
-        ];
-    
-        const clientOpenAi = new OpenAI({
-            apiKey: tenantKeyData.chatGptKey
-        });
-    
-        const openAi = await clientOpenAi.chat.completions.create({
-            messages: messagesOpenAi,
-            model: CHAT_GPT_MODEL!,
-            max_completion_tokens: Number(JSON.parse(getTenants).find((val: any) => val.id == message.tenant).maxCompletionToken),
-            stream: true,
-            stream_options: {
-                include_usage: true
+            const getTenants = await clientRedis.get(REDIS_TENANT) ?? "-"
+            const getTenantKey = await clientRedis.get(REDIS_TENANT_KEYS) ?? "-"
+            const getToken:any = await clientRedis.get(`USER_TOKEN_${message.token}`) ?? "-"
+            
+        
+            const tenantData = JSON.parse(getTenants).find((val: any) => val.id == message.tenant)
+            const tenantKeyData = JSON.parse(getTenantKey).find((val: any) => val.tenantName == message.tenant)
+            if (getToken != "-") {
+                const tokenData = JSON.parse(getToken)
+                const getUserTenant = await clientRedis.get(`USER_DATA_${tokenData.userId}`) ?? "-"
+                userTenantData =  JSON.parse(getUserTenant)
+            }else{
+                ws.send(JSON.stringify({ status: 401, message: "sorry, user not valid" }));
             }
-        });
-        let frameSize = 0;
-        let frameTemp = [];
-        let sendId = 0;
     
-        for await (const chunk of openAi) {
-            if (chunk.choices.length != 0) {
-                chatsTemp.push({
-                    // role: chunk.choices[0].delta.role,
-                    content: chunk.choices[0].delta.content
-                })
-                frameSize += 1;
-                frameTemp.push(chunk.choices[0].delta.content)
-                if (frameSize == 10) {
-                    sendId += 1;
-                    const data = {
-                        uuid: message.uuid,
-                        id: sendId,
-                        msg: frameTemp
-                    }
-                    ws.send(JSON.stringify(data));
-                    frameSize = 0;
-                    frameTemp = [];
-                }
-            } else {
-                totalPrompt = chunk.usage?.prompt_tokens ?? 0
-                totalCompletion = chunk.usage?.completion_tokens ?? 0
+            //Check max token user
+            if (userTenantData.totalCompletionTokenUsage + userTenantData.totalCompletionTokenUsage > tenantData.maxCompletionToken) {
+                ws.send(JSON.stringify({ status: 403, message: "Your request exceeds the maximum tokens on your tenant" }));
+                ws.close();
             }
-        }
     
-        if (frameTemp.length != 0) {
-            sendId += 1;
-            const data = {
-                uuid: message.uuid,
-                id: sendId,
-                msg: frameTemp
-            }
-            ws.send(JSON.stringify(data));
-        }
     
-    if (getTenants != null) {
-        JSON.parse(getTenants).map((val: any) => {
-            tenantTemp.push({
-                ...val
-            })
-        })
-    
-        if (JSON.parse(getTenants).find((val: any) => val.id == message.tenant) == null) {
-            ws.send(JSON.stringify({ status: 404, message: "Tenant not found, please create a new tenant" }));
-            return false
-        }
+            let messagesOpenAi = [
+                {
+                    role: 'system',
+                    content: `
+                        if user request image,video please give only link but not giving search URL, just give a random url link but not from example.com !!!
        
-    }else{
-        ws.send(JSON.stringify({ status: 404, message: "Tenant key not found in redis" }));
-    }
-    
-    tenantTemp = tenantTemp.map((val: any) => {
-        if (val.id == message.tenant) {
-            return {
-                ...val,
-                totalPromptTokenUsage:tenantData.totalPromptTokenUsage + totalPrompt, 
-                totalCompletionTokenUsage: tenantData.totalCompletionTokenUsage + totalCompletion
+                    `
+                },
+                ...message.messages.map((val: any) => {
+                    return {
+                        role: val.role,
+                        content: val.content
+                    }
+                })
+            ];
+        
+            const clientOpenAi = new OpenAI({
+                apiKey: tenantKeyData.chatGptKey
+            });
+        
+            const openAi = await clientOpenAi.chat.completions.create({
+                messages: messagesOpenAi,
+                model: CHAT_GPT_MODEL!,
+                max_completion_tokens: Number(JSON.parse(getTenants).find((val: any) => val.id == message.tenant).maxCompletionToken),
+                stream: true,
+                stream_options: {
+                    include_usage: true
+                }
+            });
+            let frameSize = 0;
+            let frameTemp = [];
+            let sendId = 0;
+        
+            for await (const chunk of openAi) {
+                if (chunk.choices.length != 0) {
+                    chatsTemp.push({
+                        // role: chunk.choices[0].delta.role,
+                        content: chunk.choices[0].delta.content
+                    })
+                    frameSize += 1;
+                    frameTemp.push(chunk.choices[0].delta.content)
+                    if (frameSize == 10) {
+                        sendId += 1;
+                        const data = {
+                            uuid: message.uuid,
+                            id: sendId,
+                            msg: frameTemp
+                        }
+                        ws.send(JSON.stringify(data));
+                        frameSize = 0;
+                        frameTemp = [];
+                    }
+                } else {
+                    totalPrompt = chunk.usage?.prompt_tokens ?? 0
+                    totalCompletion = chunk.usage?.completion_tokens ?? 0
+                }
             }
+        
+            if (frameTemp.length != 0) {
+                sendId += 1;
+                const data = {
+                    uuid: message.uuid,
+                    id: sendId,
+                    msg: frameTemp
+                }
+                ws.send(JSON.stringify(data));
+            }
+        
+        if (getTenants != null) {
+            JSON.parse(getTenants).map((val: any) => {
+                tenantTemp.push({
+                    ...val
+                })
+            })
+        
+            if (JSON.parse(getTenants).find((val: any) => val.id == message.tenant) == null) {
+                ws.send(JSON.stringify({ status: 404, message: "Tenant not found, please create a new tenant" }));
+                return false
+            }
+           
         }else{
-            return val
+            ws.send(JSON.stringify({ status: 404, message: "Tenant key not found in redis" }));
         }
-    })
-    
-    
-    await clientRedis.set(
-        REDIS_TENANT,
-        JSON.stringify([...tenantTemp]),
-    )
-    
-    if (userTenantData) {
-         userTenantData.totalPromptTokenUsage += totalPrompt;
-        userTenantData.totalCompletionTokenUsage += totalCompletion;
-        await clientRedis.set(`USER_DATA_${userTenantData.userId}`, JSON.stringify(userTenantData));
+        
+        tenantTemp = tenantTemp.map((val: any) => {
+            if (val.id == message.tenant) {
+                return {
+                    ...val,
+                    totalPromptTokenUsage:tenantData.totalPromptTokenUsage + totalPrompt, 
+                    totalCompletionTokenUsage: tenantData.totalCompletionTokenUsage + totalCompletion
+                }
+            }else{
+                return val
+            }
+        })
+        
+        
+        await clientRedis.set(
+            REDIS_TENANT,
+            JSON.stringify([...tenantTemp]),
+        )
+        
+        if (userTenantData) {
+             userTenantData.totalPromptTokenUsage += totalPrompt;
+            userTenantData.totalCompletionTokenUsage += totalCompletion;
+            await clientRedis.set(`USER_DATA_${userTenantData.userId}`, JSON.stringify(userTenantData));
+        }
+    } catch (error:any) {
+        ws.send(JSON.stringify({ status: error.status, message: error.error.message }));
     }
-
-
 }
 
 
