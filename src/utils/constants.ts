@@ -8,3 +8,5 @@ export const API_URL = process.env.API_URL
 
 export const REDIS_URL = process.env.REDIS_URL
 export const REDIS_PASS = process.env.REDIS_PASS
+
+export const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY

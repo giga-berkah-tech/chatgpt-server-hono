@@ -126,7 +126,7 @@ export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
     try {
         let chatsTemp = []
         let tenantTemp: Tenant[] = []
-        let userTenantData
+        let userTenantData:any
     
             let totalPrompt = 0
             let totalCompletion = 0
@@ -236,6 +236,12 @@ export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
         }else{
             ws.send(JSON.stringify({ status: 404, message: "Tenant key not found in redis" }));
         }
+
+        if (userTenantData) {
+            userTenantData.totalPromptTokenUsage += totalPrompt;
+           userTenantData.totalCompletionTokenUsage += totalCompletion;
+           await clientRedis.set(`USER_DATA_${userTenantData.userId}`, JSON.stringify(userTenantData));
+       }
         
         tenantTemp = tenantTemp.map((val: any) => {
             if (val.id == message.tenant) {
@@ -248,18 +254,14 @@ export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
                 return val
             }
         })
-        
+
         
         await clientRedis.set(
             REDIS_TENANT,
             JSON.stringify([...tenantTemp]),
         )
         
-        if (userTenantData) {
-             userTenantData.totalPromptTokenUsage += totalPrompt;
-            userTenantData.totalCompletionTokenUsage += totalCompletion;
-            await clientRedis.set(`USER_DATA_${userTenantData.userId}`, JSON.stringify(userTenantData));
-        }
+       
     } catch (error:any) {
         ws.send(JSON.stringify({ status: error.status, message: error.error.message }));
     }

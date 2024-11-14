@@ -21,6 +21,8 @@ export const checkIp = async (c: Context) => {
         if (ipAllowedTemp.find((val: any) => val.ip == getIp) != null) {
             console.log("ip_allowed key found in redis")
             return true
+        }else{
+            return false
         }
 
     } else {
