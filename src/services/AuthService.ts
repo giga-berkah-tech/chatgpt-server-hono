@@ -18,6 +18,8 @@ export const corsAuth = cors({
 export const checkValidToken =  (c: Context) => {
     try {
         const token = c.req.header('Authorization')
+        console.log(token)
+        console.log("JWT_SECRET_KEY ", JWT_SECRET_KEY)
         jwt.verify(token ?? "", JWT_SECRET_KEY ?? "IS_A_SECRET_KEY");
         return true
     } catch (error: any) {
