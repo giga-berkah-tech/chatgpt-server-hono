@@ -4,6 +4,7 @@ import { failedResponse, successDataResponse, successResponse } from "../helpers
 import { Tenant, TenantKeys } from "../types/tenant"
 import { clientRedis } from ".."
 import { REDIS_TENANT, REDIS_TENANT_KEYS } from "../utils/key_types"
+import { CHAT_GPT_MAX_COMPLETION_TOKENS } from "../utils/constants"
 
 export const getTenants = async (c: Context) => {
     let tenantTemp: Tenant[] = []
@@ -47,8 +48,8 @@ export const createTenant = async (c: Context) => {
 
     const body = await c.req.json()
 
-    if (body.name == undefined || body.max_completion_token == undefined || body.chat_gpt_key == undefined || body.name == null || body.max_completion_token == null || body.chat_gpt_key == null || body.name == '' || body.max_completion_token == '' || body.chat_gpt_key == '') {
-        return failedResponse(c, 'Name tenant, max completion token and chat gpt key is required', 422)
+    if (body.name == undefined || body.max_context == undefined || body.chat_gpt_key == undefined || body.name == null || body.max_context == null || body.chat_gpt_key == null || body.name == '' || body.max_context == '' || body.chat_gpt_key == '') {
+        return failedResponse(c, 'Name tenant, max input token and chat gpt key is required', 422)
     }
 
     const getTenants = await clientRedis.get(REDIS_TENANT) ?? null
@@ -76,7 +77,8 @@ export const createTenant = async (c: Context) => {
         tenantTemp.push({
             id: body.name.toString(),
             name: body.name.toString(),
-            maxCompletionToken: parseInt(body.max_completion_token),
+            maxContext: parseInt(body.max_context),
+            maxCompletionToken: 2048,
             totalPromptTokenUsage: 0,
             totalCompletionTokenUsage: 0,
             status: body.status ?? false
@@ -164,8 +166,8 @@ export const editTenant = async (c: Context) => {
 
     const body = await c.req.json()
 
-    if (body.tenant_name == null || body.max_completion_token == null || body.tenant_name == '' || body.max_completion_token == '' || body.status == null) {
-        return failedResponse(c, 'Name tenant, max completion token & status must not be empty', 422)
+    if (body.tenant_name == null || body.max_context == null || body.tenant_name == '' || body.max_context == '' || body.status == null) {
+        return failedResponse(c, 'Name tenant, max context & status must not be empty', 422)
     }
 
     const getTenants = await clientRedis.get(REDIS_TENANT) ?? null
@@ -198,6 +200,7 @@ export const editTenant = async (c: Context) => {
                 return {
                     ...val,
                     name: body.tenant_name == undefined ? val.tenantName : body.tenant_name,
+                    maxContext: body.max_context == undefined ? val.maxContext : parseInt(body.max_context),
                     maxCompletionToken: body.max_completion_token == undefined ? val.maxCompletionToken : parseInt(body.max_completion_token),
                     status: body.status == undefined ? val.status : body.status,
                 }

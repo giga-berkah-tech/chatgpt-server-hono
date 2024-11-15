@@ -3,6 +3,8 @@ import OpenAI from 'openai';
 
 
 import { ServerWebSocket } from 'bun';
+import { GPTTokens } from 'gpt-tokens'
+
 import { clientRedis } from '..';
 import { Tenant } from '../types/tenant';
 import { API_URL, CHAT_GPT_MODEL } from '../utils/constants';
@@ -25,7 +27,6 @@ const verifyWebSocketUser = async (tenant: string,token: string) => {
                 userId:response.data.data.id,
                 totalCompletionTokenUsage:JSON.parse(getUserTenant).totalCompletionTokenUsage,
                 totalPromptTokenUsage:JSON.parse(getUserTenant).totalPromptTokenUsage,
-                maxInputChat:JSON.parse(getUserTenant).maxInputChat,
                 tenant:tenant,
                 token:token
             }
@@ -37,7 +38,6 @@ const verifyWebSocketUser = async (tenant: string,token: string) => {
                 userId:response.data.data.id,
                 totalCompletionTokenUsage:0,
                 totalPromptTokenUsage:0,
-                maxInputChat:0,
                 tenant:tenant,
                 token:token
             }
@@ -137,9 +137,11 @@ export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
             const getTenantKey = await clientRedis.get(REDIS_TENANT_KEYS) ?? "-"
             const getToken:any = await clientRedis.get(`USER_TOKEN_${message.token}`) ?? "-"
             
-        
             const tenantData = JSON.parse(getTenants).find((val: any) => val.id == message.tenant)
             const tenantKeyData = JSON.parse(getTenantKey).find((val: any) => val.tenantName == message.tenant)
+
+       
+
             if (getToken != "-") {
                 const tokenData = JSON.parse(getToken)
                 const getUserTenant = await clientRedis.get(`USER_DATA_${tokenData.userId}`) ?? "-"
@@ -147,16 +149,36 @@ export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
             }else{
                 ws.send(JSON.stringify({ status: 401, message: "sorry, user not valid" }));
             }
-    
-            //Check max token user
-            if (userTenantData.totalCompletionTokenUsage + userTenantData.totalCompletionTokenUsage > tenantData.maxCompletionToken) {
-                ws.send(JSON.stringify({ status: 403, message: "Your request exceeds the maximum tokens on your tenant" }));
+
+            if ((userTenantData.totalPromptTokenUsage + userTenantData.totalCompletionTokenUsage) > tenantData.maxContext) {
+                ws.send(JSON.stringify({ status: 403, message: "You have exceeded the tenant quota" }));
                 ws.close();
             }
 
-            const getMessageByMaxInput = message.messages.slice(-userTenantData.maxInputChat);
+            //Get messages from client
+            const getMessageInput = message.messages
+    
+            //Get length token
+            const usageInfo = new GPTTokens({
+                model   : "gpt-4o-mini",
+                messages: [
+                    ...getMessageInput.map((val: any) => {
+                        return {
+                            role: val.role,
+                            content: val.content
+                        }
+                    })
+                ],
+            })
+
+            console.log('Used tokens: ', usageInfo.usedTokens)
             
-            console.log("getMessageByMaxInput",getMessageByMaxInput.length)
+            if (usageInfo.usedTokens > tenantData.maxContext) {
+                ///////////
+            }
+
+
+            //Send message to OpenAI
     
             let messagesOpenAi = [
                 {
@@ -166,7 +188,7 @@ export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
        
                     `
                 },
-                ...getMessageByMaxInput.map((val: any) => {
+                ...getMessageInput.map((val: any) => {
                     return {
                         role: val.role,
                         content: val.content
@@ -181,7 +203,8 @@ export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
             const openAi = await clientOpenAi.chat.completions.create({
                 messages: messagesOpenAi,
                 model: CHAT_GPT_MODEL!,
-                max_completion_tokens: Number(JSON.parse(getTenants).find((val: any) => val.id == message.tenant).maxCompletionToken),
+                max_completion_tokens: 2048,
+                // Number(JSON.parse(getTenants).find((val: any) => val.id == message.tenant).maxInput),
                 stream: true,
                 stream_options: {
                     include_usage: true
@@ -268,7 +291,7 @@ export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
         
        
     } catch (error:any) {
-        ws.send(JSON.stringify({ status: error.status, message: error.error.message }));
+        ws.send(JSON.stringify({ status: error.status, message: error }));
     }
 }
 
