@@ -13,7 +13,7 @@ export const websocketOptions = {
       return;
     }
 
-    console.log("Message Received:",messageData)
+    // console.log("Message Received:",messageData)
     // let isvalid = await checkTenantVerifyUser(ws, messageData)
       if (! await checkTenantVerifyUser(ws, messageData)) {
         ws.send(JSON.stringify({ status: 401, message: "user not valid" }))

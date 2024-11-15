@@ -25,6 +25,7 @@ const verifyWebSocketUser = async (tenant: string,token: string) => {
                 userId:response.data.data.id,
                 totalCompletionTokenUsage:JSON.parse(getUserTenant).totalCompletionTokenUsage,
                 totalPromptTokenUsage:JSON.parse(getUserTenant).totalPromptTokenUsage,
+                maxInputChat:JSON.parse(getUserTenant).maxInputChat,
                 tenant:tenant,
                 token:token
             }
@@ -36,6 +37,7 @@ const verifyWebSocketUser = async (tenant: string,token: string) => {
                 userId:response.data.data.id,
                 totalCompletionTokenUsage:0,
                 totalPromptTokenUsage:0,
+                maxInputChat:0,
                 tenant:tenant,
                 token:token
             }
@@ -151,7 +153,10 @@ export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
                 ws.send(JSON.stringify({ status: 403, message: "Your request exceeds the maximum tokens on your tenant" }));
                 ws.close();
             }
-    
+
+            const getMessageByMaxInput = message.messages.slice(-userTenantData.maxInputChat);
+            
+            console.log("getMessageByMaxInput",getMessageByMaxInput.length)
     
             let messagesOpenAi = [
                 {
@@ -161,7 +166,7 @@ export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
        
                     `
                 },
-                ...message.messages.map((val: any) => {
+                ...getMessageByMaxInput.map((val: any) => {
                     return {
                         role: val.role,
                         content: val.content

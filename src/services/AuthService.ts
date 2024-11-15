@@ -15,7 +15,7 @@ export const corsAuth = cors({
     credentials: true,
 })
 
-export const checkValidToken =  (c: Context) => {
+export const checkValidToken = (c: Context) => {
     try {
         const token = c.req.header('Authorization')
         console.log(token)
