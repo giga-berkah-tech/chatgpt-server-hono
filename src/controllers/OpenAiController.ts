@@ -156,7 +156,7 @@ export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
             }
 
             //Get messages from client
-            const getMessageInput = message.messages
+            const getMessageInput:[] = message.messages
     
             //Get length token
             const usageInfo = new GPTTokens({
@@ -174,9 +174,8 @@ export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
             console.log('Used tokens: ', usageInfo.usedTokens)
             
             if (usageInfo.usedTokens > tenantData.maxContext) {
-                ///////////
+                // TODO HERE
             }
-
 
             //Send message to OpenAI
     
@@ -203,7 +202,7 @@ export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
             const openAi = await clientOpenAi.chat.completions.create({
                 messages: messagesOpenAi,
                 model: CHAT_GPT_MODEL!,
-                max_completion_tokens: 2048,
+                max_completion_tokens:  Number(JSON.parse(getTenants).find((val: any) => val.id == message.tenant).maxCompletionToken),
                 // Number(JSON.parse(getTenants).find((val: any) => val.id == message.tenant).maxInput),
                 stream: true,
                 stream_options: {
