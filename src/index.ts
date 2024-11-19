@@ -34,6 +34,7 @@ app.use('/api/*', corsAuth)
 
 //Api Routes
 const routePath = '/api'
+app.route(`/`, app.get('/', (c) => c.text('Hello from chatgpt service!')))
 app.route(`${routePath}`, TenantRoutes)
 app.route(`${routePath}`, AuthRoutes)
 app.route(`${routePath}`, TenantKeyRoutes)
@@ -73,5 +74,6 @@ console.log('====================================================')
 console.log('====================================================')
 console.log('====================================================')
 console.log('The server is running...')
+
 
 export default app
