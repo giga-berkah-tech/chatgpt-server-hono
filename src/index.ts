@@ -28,6 +28,8 @@ const checkConnRedis = async () => {
   }
 }
 
+
+
 app.use('/api/*', corsAuth)
 
 //Api Routes
@@ -63,5 +65,8 @@ Bun.serve({
 
 checkConnRedis()
 
+console.log('Server started on port 3001')
+console.log('====================================================')
+console.log('The server is running...')
 
 export default app
