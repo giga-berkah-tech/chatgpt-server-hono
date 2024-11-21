@@ -229,7 +229,7 @@ export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
                             msg: frameTemp
                         }
                         ws.send(JSON.stringify(data));
-                        console.log(JSON.stringify(data))
+                        console.log("=>",JSON.stringify(data))
                         frameSize = 0;
                         frameTemp = [];
                     }
@@ -259,13 +259,13 @@ export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
         
             if (JSON.parse(getTenants).find((val: any) => val.id == message.tenant) == null) {
                 ws.send(JSON.stringify({ status: 404, message: "Tenant not found, please create a new tenant" }));
-                console.log("invalid: Tenant not found, please create a new tenant")
+                console.log("WS error => Tenant not found, please create a new tenant")
                 return false
             }
            
         }else{
             ws.send(JSON.stringify({ status: 404, message: "Tenant key not found in redis" }));
-            console.log("invalid: Tenant key not found in redis")
+            console.log("WS error => Tenant key not found in redis")
         }
 
         if (userTenantData) {
@@ -295,7 +295,7 @@ export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
        
     } catch (error:any) {
         ws.send(JSON.stringify({ status: error.status, message: error }));
-        console.log("invalid:", error)
+        console.log("WS error =>", error)
         
     }
 }
