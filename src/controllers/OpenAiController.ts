@@ -140,8 +140,6 @@ export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
             const tenantData = JSON.parse(getTenants).find((val: any) => val.id == message.tenant)
             const tenantKeyData = JSON.parse(getTenantKey).find((val: any) => val.tenantName == message.tenant)
 
-       
-
             if (getToken != "-") {
                 const tokenData = JSON.parse(getToken)
                 const getUserTenant = await clientRedis.get(`USER_DATA_${tokenData.userId}`) ?? "-"

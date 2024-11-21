@@ -2,7 +2,7 @@ export interface Tenant {
     id: string,
     name: string,
     maxContext: number,
-    maxCompletionToken: number,
+    maxConsumptionToken: number,
     totalPromptTokenUsage: number
     totalCompletionTokenUsage: number,
     status: boolean

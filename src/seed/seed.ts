@@ -6,7 +6,7 @@ const tenantData = [
         id: "100",
         name: "100",
         maxContext: 2048,
-        maxConsumptionToken:2048,
+        maxConsumptionToken:1000000,
         totalPromptTokenUsage: 0,
         totalCompletionTokenUsage: 0,
         status:false
