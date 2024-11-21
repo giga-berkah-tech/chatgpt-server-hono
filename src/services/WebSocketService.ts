@@ -4,6 +4,7 @@ import { chatsOpenAi, checkTenantVerifyUser } from "../controllers/OpenAiControl
 export const websocketOptions = {
 
     open: (ws: ServerWebSocket) => {
+      console.log("================ Websocket ================")
       console.log("Client connected");
     },
     message: async(ws: ServerWebSocket, message: any) => {
@@ -23,6 +24,7 @@ export const websocketOptions = {
       chatsOpenAi(ws,messageData)
     },
     close: (ws: ServerWebSocket) => {
-      console.log("Client disconnected");
+      console.log("================ Websocket ================")
+      console.log("Client close/disconnected");
     },
   };
