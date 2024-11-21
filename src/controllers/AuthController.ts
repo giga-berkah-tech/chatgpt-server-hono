@@ -7,7 +7,8 @@ export const checkIp = async (c: Context) => {
     let ipAllowedTemp: any = []
 
     const getIp = getConnInfo(c).remote.address?.replaceAll('::ffff:', '')
-    console.log(getIp)
+    let dateNow = new Date()
+    console.log(`User IP (${dateNow}) => ${getIp}`)
 
     const getIpAllowed = await clientRedis.get("ip_allowed") ?? null
 
@@ -19,7 +20,6 @@ export const checkIp = async (c: Context) => {
         })
 
         if (ipAllowedTemp.find((val: any) => val.ip == getIp) != null) {
-            console.log("ip_allowed key found in redis")
             return true
         }else{
             return false

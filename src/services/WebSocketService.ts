@@ -10,13 +10,16 @@ export const websocketOptions = {
     message: async(ws: ServerWebSocket, message: any) => {
     let messageData = JSON.parse(message)
     if (!messageData || !messageData.token || !messageData.tenant || !messageData.messages  || !messageData.uuid) {
-      console.log("Message invalid:", message)
+      console.log("================ Websocket ================")
+      console.log("invalid:", message)
       return;
     }
 
     // console.log("Message Received:",messageData)
     // let isvalid = await checkTenantVerifyUser(ws, messageData)
       if (! await checkTenantVerifyUser(ws, messageData)) {
+        console.log("================ Websocket ================")
+        console.log("invalid:", message)
         ws.send(JSON.stringify({ status: 401, message: "user not valid" }))
         ws.close();
         return;

@@ -8,12 +8,13 @@ import { corsAuth } from './services/AuthService'
 import { websocketOptions } from './services/WebSocketService'
 import { REDIS_PASS, REDIS_URL } from './utils/constants'
 import { Seeding } from './seed/seed'
+import { checkIp } from './controllers/AuthController'
 
 // Initialize the Hono app
 const app = new Hono()
 
 export const clientRedis = createClient({
-  url: REDIS_URL,
+  url: "redis://192.168.1.15:6378",
   password: "",
 })
 
@@ -34,18 +35,22 @@ app.use('/api/*', corsAuth)
 
 //Api Routes
 const routePath = '/api'
-app.route(`/`, app.get('/', (c) => c.text('Hello from chatgpt service!')))
+app.route(`/`, app.get('/', (c) => {
+  checkIp(c)
+  return c.text('Hello from chatgpt service!')
+}))
 app.route(`${routePath}`, TenantRoutes)
 app.route(`${routePath}`, AuthRoutes)
 app.route(`${routePath}`, TenantKeyRoutes)
 
 //Websocket
-const { upgradeWebSocket, websocket } =
+const { upgradeWebSocket } =
   createBunWebSocket<ServerWebSocket>()
 
 app.get(
   '/ws',
   upgradeWebSocket((c) => {
+    checkIp(c)
     return {
       // onMessage(event, ws) {
       //   console.log(`Message from client: ${event.data}`)
@@ -58,7 +63,7 @@ app.get(
   })
 )
 
-Bun.serve({
+const server = Bun.serve({
   port: 3001,
   websocket: websocketOptions,
   fetch: app.fetch,
@@ -66,14 +71,9 @@ Bun.serve({
 
 checkConnRedis()
 
-console.log('Server started on port 3001')
-console.log('====================================================')
-console.log('====================================================')
-console.log('====================================================')
-console.log('====================================================')
-console.log('====================================================')
-console.log('====================================================')
+console.log(`Server started on URL ${server.url} || port ${server.port}`)
 console.log('The server is running...')
+
 
 
 export default app
