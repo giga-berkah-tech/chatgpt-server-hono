@@ -14,7 +14,7 @@ import { checkIp } from './controllers/AuthController'
 const app = new Hono()
 
 export const clientRedis = createClient({
-  url: "redis://192.168.1.15:6378",
+  url: REDIS_URL,
   password: "",
 })
 
