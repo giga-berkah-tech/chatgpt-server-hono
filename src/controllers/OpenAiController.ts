@@ -150,8 +150,8 @@ export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
                 ws.send(JSON.stringify({ status: 401, message: "sorry, user not valid" }));
             }
 
-            if ((userTenantData.totalPromptTokenUsage + userTenantData.totalCompletionTokenUsage) > tenantData.maxContext) {
-                ws.send(JSON.stringify({ status: 403, message: "You have exceeded the tenant quota" }));
+            if ((userTenantData.totalPromptTokenUsage + userTenantData.totalCompletionTokenUsage) > tenantData.maxConsumptionToken) {
+                ws.send(JSON.stringify({ status: 403, message: "You have exceeded the tenant quota consumption" }));
                 ws.close();
             }
 
@@ -202,7 +202,7 @@ export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
             const openAi = await clientOpenAi.chat.completions.create({
                 messages: messagesOpenAi,
                 model: CHAT_GPT_MODEL!,
-                max_completion_tokens:  Number(JSON.parse(getTenants).find((val: any) => val.id == message.tenant).maxCompletionToken),
+                // max_completion_tokens:  Number(JSON.parse(getTenants).find((val: any) => val.id == message.tenant).maxCompletionToken),
                 // Number(JSON.parse(getTenants).find((val: any) => val.id == message.tenant).maxInput),
                 stream: true,
                 stream_options: {
@@ -224,12 +224,13 @@ export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
                     if (frameSize == 10) {
                         sendId += 1;
                         const data = {
+                            status: 200,
                             uuid: message.uuid,
                             id: sendId,
                             msg: frameTemp
                         }
                         ws.send(JSON.stringify(data));
-                        console.log("=>",JSON.stringify(data))
+                        // console.log("=>",JSON.stringify(data))
                         frameSize = 0;
                         frameTemp = [];
                     }
@@ -242,12 +243,13 @@ export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
             if (frameTemp.length != 0) {
                 sendId += 1;
                 const data = {
+                    status: 200,
                     uuid: message.uuid,
                     id: sendId,
                     msg: frameTemp
                 }
                 ws.send(JSON.stringify(data));
-                console.log("=>",JSON.stringify(data))
+                // console.log("=>",JSON.stringify(data))
             }
         
         if (getTenants != null) {
@@ -296,6 +298,7 @@ export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
     } catch (error:any) {
         ws.send(JSON.stringify({ status: error.status, message: error }));
         console.log("WS error =>", error)
+        ws.close();
         
     }
 }

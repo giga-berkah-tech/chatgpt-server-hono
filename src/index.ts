@@ -37,7 +37,7 @@ app.use('/api/*', corsAuth)
 const routePath = '/api'
 app.route(`/`, app.get('/', (c) => {
   checkIp(c)
-  return c.text('Hello from chatgpt service!')
+  return c.text('Hello from chatgpt service! v1.0.0')
 }))
 app.route(`${routePath}`, TenantRoutes)
 app.route(`${routePath}`, AuthRoutes)
