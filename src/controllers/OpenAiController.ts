@@ -225,6 +225,7 @@ export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
                             status: 200,
                             uuid: message.uuid,
                             id: sendId,
+                            maxContext: tenantData.maxContext,
                             msg: frameTemp
                         }
                         ws.send(JSON.stringify(data));
@@ -244,6 +245,7 @@ export const chatsOpenAi = async (ws: ServerWebSocket, message: any) => {
                     status: 200,
                     uuid: message.uuid,
                     id: sendId,
+                    maxContext: tenantData.maxContext,
                     msg: frameTemp
                 }
                 ws.send(JSON.stringify(data));
