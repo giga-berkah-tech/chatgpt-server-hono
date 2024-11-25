@@ -4,7 +4,7 @@ import { Hono } from 'hono';
 //import controller
 import { failedResponse } from '../helpers/response_json';
 import { checkIp } from '../controllers/AuthController';
-import { getTenantKey } from '../controllers/TenantKeyController';
+import { editTenantKey, getTenantKey } from '../controllers/TenantKeyController';
 import { checkValidToken } from '../services/AuthService';
 
 //inistialize router
@@ -18,6 +18,12 @@ router.get('/', async(c) =>{
         return failedResponse(c, "You are not allowed", 403)
     }
     return getTenantKey(c)
+});
+router.put('/', async(c) => {
+    if (!await checkIp(c)) {
+        return failedResponse(c, "You are not allowed", 403)
+    }
+    return editTenantKey(c)
 });
 
 export const TenantKeyRoutes = router;
