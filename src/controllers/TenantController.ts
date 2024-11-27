@@ -256,3 +256,21 @@ export const deleteAllTenant = async (c: Context) => {
        return failedResponse(c, 'Tenant or tenant key not found in redis', 404)     
     }
 }
+
+export const getTenantData = async (c: Context) => {
+    const getTenants = await clientRedis.get(REDIS_TENANT) ?? null
+    if (getTenants != null) {
+        if (JSON.parse(getTenants).find((val: any) => val.id == c.req.param('tenant_id')) != null) {
+            var result:Tenant = {
+                ...JSON.parse(getTenants).find((val: any) => val.id == c.req.param('tenant_id'))
+            }
+            return successDataResponse(c,{
+                maxContext: result.maxContext,
+            })
+        }else{
+            return failedResponse(c, 'Tenant not found', 404)
+        }
+    }else{
+        return failedResponse(c, 'Tenants_keys not found in redis', 404)
+    }
+}

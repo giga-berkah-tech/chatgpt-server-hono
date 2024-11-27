@@ -2,7 +2,7 @@
 import { Hono } from 'hono';
 
 //import controller
-import { createTenant, deleteAllTenant, deleteTenantWithTenantKey, editTenant, getTenantDetail, getTenants } from '../controllers/TenantController';
+import { createTenant, deleteAllTenant, deleteTenantWithTenantKey, editTenant, getTenantData, getTenantDetail, getTenants } from '../controllers/TenantController';
 import { failedResponse } from '../helpers/response_json';
 import { checkIp } from '../controllers/AuthController';
 import { checkValidToken } from '../services/AuthService';
@@ -28,6 +28,13 @@ router.get('/:tenant_id', async(c) =>{
         return failedResponse(c, "You are not allowed", 403)
     }
     return getTenantDetail(c)
+});
+
+router.get('/data/:tenant_id', async(c) =>{
+    if (!await checkIp(c)) {
+        return failedResponse(c, "You are not allowed", 403)
+    }
+    return getTenantData(c)
 });
 
 router.post('/', async(c) =>{
