@@ -30,11 +30,23 @@ const ipAllowed = [
     }
 ]
 
+let dateNow = new Date()
+
+const dateInDb =  {
+    second: dateNow.getSeconds(),
+    minutes: dateNow.getMinutes(),
+    hours: dateNow.getHours(),
+    day: dateNow.getDay(),
+    month: dateNow.getMonth() + 1,
+    year: dateNow.getFullYear()
+}
+
 export async function Seeding() {
     try {
         const getTenants = await clientRedis.get("tenants") ?? null
         const getTenantKeys = await clientRedis.get("tenant_keys") ?? null
         const getIpAllowed = await clientRedis.get("ip_allowed") ?? null
+        const getDateInDb = await clientRedis.get("date_in_db") ?? null
 
         if (getTenants == null) {
             await clientRedis.set("tenants", JSON.stringify(tenantData))
@@ -47,6 +59,11 @@ export async function Seeding() {
         if (getIpAllowed == null) {
             await clientRedis.set("ip_allowed", JSON.stringify(ipAllowed))
         }
+
+        if (getDateInDb == null) {
+            await clientRedis.set("date_in_db", JSON.stringify(dateInDb))
+        }
+
     } catch (error) {
         console.log('Failed seeded to redis ', error)
 

@@ -16,10 +16,9 @@ export interface TenantKeys {
 }
 
 export interface UserTenant {
-    id:String,
-    tenantId: String
-    tenant?: Tenant,
-    userCode: string,
+    userId: String
+    tenant: String
     totalPromptTokenUsage: number
     totalCompletionTokenUsage: number
+    token: string
 }
