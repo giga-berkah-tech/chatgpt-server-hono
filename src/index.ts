@@ -3,7 +3,7 @@ import { Hono } from 'hono'
 import { createBunWebSocket } from 'hono/bun'
 import { createClient } from 'redis'
 
-import { AuthRoutes, TenantKeyRoutes, TenantRoutes } from './routes'
+import { AuthRoutes, DateInDbRoutes, TenantKeyRoutes, TenantRoutes } from './routes'
 import { corsAuth } from './services/AuthService'
 import { websocketOptions } from './services/WebSocketService'
 import { REDIS_PASS, REDIS_URL } from './utils/constants'
@@ -37,11 +37,12 @@ app.use('/api/*', corsAuth)
 const routePath = '/api'
 app.route(`/`, app.get('/', (c) => {
   checkIp(c)
-  return c.text('Hello from chatgpt service! v1.0.5')
+  return c.text('Hello from chatgpt service! v1.0.6')
 }))
 app.route(`${routePath}`, TenantRoutes)
 app.route(`${routePath}`, AuthRoutes)
 app.route(`${routePath}`, TenantKeyRoutes)
+app.route(`${routePath}`, DateInDbRoutes)
 
 //Websocket
 const { upgradeWebSocket } =
