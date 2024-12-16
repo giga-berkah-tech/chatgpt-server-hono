@@ -37,7 +37,7 @@ app.use('/api/*', corsAuth)
 const routePath = '/api'
 app.route(`/`, app.get('/', (c) => {
   checkIp(c)
-  return c.text('Hello from chatgpt service! v1.0.7')
+  return c.text('Hello from chatgpt service! v1.0.8')
 }))
 app.route(`${routePath}`, TenantRoutes)
 app.route(`${routePath}`, AuthRoutes)
@@ -45,29 +45,28 @@ app.route(`${routePath}`, TenantKeyRoutes)
 app.route(`${routePath}`, DateInDbRoutes)
 
 //Websocket
-const { upgradeWebSocket, websocket } = createBunWebSocket();
+const { upgradeWebSocket } =
+  createBunWebSocket<ServerWebSocket>()
 
 app.get(
   '/ws',
-  upgradeWebSocket((_) => ({
-    onOpen(_, ws) {
-      const rawWs = ws.raw as ServerWebSocket;
-      // rawWs.subscribe(topic);
-      console.log(`WebSocket server opened and subscribed to topic `);
-    },
-    onClose(_, ws) {
-      const rawWs = ws.raw as ServerWebSocket;
-      // rawWs.unsubscribe(topic);
-      console.log(
-        `WebSocket server closed and unsubscribed from topic `
-      );
-    },
-  }))
-);
+  upgradeWebSocket((c) => {
+    checkIp(c)
+    return {
+      // onMessage(event, ws) {
+      //   console.log(`Message from client: ${event.data}`)
+      //   ws.send('Hello from server1!')
+      // },
+      // onClose: () => {
+      //   console.log('Connection closed')
+      // },
+    }
+  })
+)
 
 const server = Bun.serve({
   port: 3001,
-  websocket,
+  websocket: websocketOptions,
   fetch: app.fetch,
 });
 
