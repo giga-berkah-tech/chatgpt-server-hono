@@ -74,7 +74,7 @@ checkConnRedis()
 
 
 console.log(`Server started on URL ${server.url} || port ${server.port}`)
-console.log(`The server is running...`)
+console.log(`The server is running....`)
 
 
 
