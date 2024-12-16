@@ -37,7 +37,7 @@ app.use('/api/*', corsAuth)
 const routePath = '/api'
 app.route(`/`, app.get('/', (c) => {
   checkIp(c)
-  return c.text('Hello from chatgpt service! v1.0.8')
+  return c.text('Hello from chatgpt service! v1.0.9')
 }))
 app.route(`${routePath}`, TenantRoutes)
 app.route(`${routePath}`, AuthRoutes)
@@ -45,7 +45,7 @@ app.route(`${routePath}`, TenantKeyRoutes)
 app.route(`${routePath}`, DateInDbRoutes)
 
 //Websocket
-const { upgradeWebSocket } =
+const { upgradeWebSocket,websocket } =
   createBunWebSocket<ServerWebSocket>()
 
 app.get(
@@ -66,7 +66,7 @@ app.get(
 
 const server = Bun.serve({
   port: 3001,
-  websocket: websocketOptions,
+  websocket: websocket,
   fetch: app.fetch,
 });
 
