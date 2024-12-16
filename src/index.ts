@@ -5,10 +5,11 @@ import { createClient } from 'redis'
 
 import { AuthRoutes, DateInDbRoutes, TenantKeyRoutes, TenantRoutes } from './routes'
 import { corsAuth } from './services/AuthService'
-import { websocketOptions } from './services/WebSocketService'
+// import { websocketOptions } from './services/WebSocketService'
 import { REDIS_PASS, REDIS_URL } from './utils/constants'
 import { Seeding } from './seed/seed'
 import { checkIp } from './controllers/AuthController'
+import { chatsOpenAi, checkTenantVerifyUser } from './controllers/OpenAiController'
 
 // Initialize the Hono app
 const app = new Hono()
@@ -17,6 +18,42 @@ export const clientRedis = createClient({
   url: REDIS_URL,
   password: "",
 })
+
+const websocketOptions = {
+
+    open: (ws: ServerWebSocket) => {
+      console.log("WS => Client connected");
+    },
+    message: async(ws: ServerWebSocket, message: any) => {
+
+      try {
+        let messageData = JSON.parse(message)
+        if (!messageData || !messageData.token || !messageData.tenant || !messageData.messages  || !messageData.uuid) {
+          ws.send(JSON.stringify({ status: 422, message: "input invalid" }))
+          console.log("WS error => input invalid")
+          return;
+        }
+    
+        // console.log("Message Received:",messageData)
+        // let isvalid = await checkTenantVerifyUser(ws, messageData)
+          if (! await checkTenantVerifyUser(ws, messageData)) {
+            console.log("WS error =>", message)
+            ws.send(JSON.stringify({ status: 401, message: "user not valid" }))
+            ws.close();
+            return;
+          };
+          chatsOpenAi(ws,messageData)
+      } catch (error) {
+        ws.send(JSON.stringify({ status: 500, message: "Connection Error" }))
+        // ws.close();
+        return;
+      }
+   
+    },
+    close: (ws: ServerWebSocket) => {
+      console.log("WS => Client close/disconnected");
+    },
+  };
 
 const checkConnRedis = async () => {
   try {
