@@ -37,7 +37,7 @@ app.use('/api/*', corsAuth)
 const routePath = '/api'
 app.route(`/`, app.get('/', (c) => {
   checkIp(c)
-  return c.text('Hello from chatgpt service! v1.0.10')
+  return c.text('Hello from chatgpt service! v1.0.11')
 }))
 app.route(`${routePath}`, TenantRoutes)
 app.route(`${routePath}`, AuthRoutes)
@@ -65,15 +65,39 @@ app.get(
 )
 
 const server = Bun.serve({
-  fetch(req, server) {
-    // upgrade the request to a WebSocket
-    if (server.upgrade(req)) {
-      return; // do not return a Response
-    }
-    return new Response("Upgrade failed", { status: 500 });
-  },
   port: 3001,
-  websocket: websocketOptions,
+  fetch(request, server){
+    if (server.upgrade(request)){
+        return;
+    }
+
+    return new Response("Helloooooo World");
+},
+  websocket:{
+    open(ws){
+        const welcomeMessage = "Welcome to the Time Server!!!  Ask 'What's the time' and I will answer.";
+        ws.send(welcomeMessage);
+        console.log("connection opened");
+    },
+    message(ws,message){
+        console.log(`incoming message: ${message}`);
+
+        const messageString = typeof message === 'string' ? message : new TextDecoder().decode(message);
+
+        if (messageString.trim().toLowerCase() === "what's the time?"){
+            const currentTime = new Date().toLocaleTimeString();
+
+            ws.send(`The time is ${currentTime}`);
+            return;
+        }
+
+        ws.send("i'm just a silly timebot, i can only tell the time");
+    },
+    close(ws){
+        console.log("connection closed");
+    }
+},
+  development: false
 });
 
 checkConnRedis()
