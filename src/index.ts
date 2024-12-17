@@ -65,9 +65,15 @@ app.get(
 )
 
 const server = Bun.serve({
+  fetch(req, server) {
+    // upgrade the request to a WebSocket
+    if (server.upgrade(req)) {
+      return; // do not return a Response
+    }
+    return new Response("Upgrade failed", { status: 500 });
+  },
   port: 3001,
-  websocket: websocket,
-  fetch: app.fetch,
+  websocket: websocketOptions,
 });
 
 checkConnRedis()
